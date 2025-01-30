@@ -1,5 +1,4 @@
-from queue import Queue
-
+from flask import Flask
 import dotenv
 import pymsteams
 import boto3
@@ -8,6 +7,9 @@ import os
 import time
 
 load_dotenv()
+
+# Entry point
+app = Flask(__name__)
 
 # Environment Variables
 AWS_ACCESS = os.getenv("AWS_ACCESS_KEY")
@@ -22,6 +24,10 @@ sqs = boto3.client('sqs',
                    aws_secret_access_key = AWS_SECRET,
                    region_name = AWS_REGION # Move to environment later
                    )
+
+@app.route("/")
+def healthCheck():
+    return "<h1> Healthy! </h1>"
 
 # Function to retrieve messages from the P1 Queue and push to Teams
 def p1TeamsPush():
@@ -73,8 +79,8 @@ def p1TeamsPush():
             print(f"An error occurred reading from SQS: {err}")
 
 
-
-
-p1TeamsPush()
+# Need the name main stuff so that you can run the flask server without infinite loop of function
+if __name__ == '__main__':
+    p1TeamsPush()
 
 
