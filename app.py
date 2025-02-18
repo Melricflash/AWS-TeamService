@@ -77,17 +77,19 @@ def p1TeamsPush():
             else:
                 print("No messages found...")
 
+def background_thread():
+    sqs_thread = threading.Thread(target=p1TeamsPush, daemon=True)
+    sqs_thread.start()
+    return sqs_thread
 
+bg_thread = background_thread()
 
 # Need the name main stuff so that you can run the flask server without infinite loop of function
 if __name__ == '__main__':
     # p1TeamsPush()
-    sqs_thread = threading.Thread(target=p1TeamsPush, daemon=True)
-    sqs_thread.start()
-
     try:
         app.run(host="0.0.0.0", port=8000)
     except KeyboardInterrupt:
         print("Shutting down...")
         stop_flag = True
-        sqs_thread.join()
+        bg_thread.join()
