@@ -1,10 +1,9 @@
 from flask import Flask
-import dotenv
 import pymsteams
 import boto3
 from dotenv import load_dotenv
 import os
-import time
+import threading
 
 load_dotenv()
 
@@ -25,20 +24,23 @@ sqs = boto3.client('sqs',
                    region_name = AWS_REGION # Move to environment later
                    )
 
+stop_flag = False
+
 @app.route("/")
 def healthCheck():
     return "<h1> Healthy! </h1>"
 
 # Function to retrieve messages from the P1 Queue and push to Teams
 def p1TeamsPush():
-    while True:
+    global stop_flag
+    while not stop_flag:
 
-        try:
+
             # Attempt to read from the queue
             response = sqs.receive_message(
                 QueueUrl = p1QueueURL,
                 MaxNumberOfMessages = 1,  # Just get one item from the queue for now
-                WaitTimeSeconds = 20
+                WaitTimeSeconds = 2
             )
 
             if 'Messages' in response:
@@ -75,12 +77,17 @@ def p1TeamsPush():
             else:
                 print("No messages found...")
 
-        except Exception as err:
-            print(f"An error occurred reading from SQS: {err}")
 
 
 # Need the name main stuff so that you can run the flask server without infinite loop of function
 if __name__ == '__main__':
-    p1TeamsPush()
+    # p1TeamsPush()
+    sqs_thread = threading.Thread(target=p1TeamsPush, daemon=True)
+    sqs_thread.start()
 
-
+    try:
+        app.run(host="0.0.0.0", port=8000)
+    except KeyboardInterrupt:
+        print("Shutting down...")
+        stop_flag = True
+        sqs_thread.join()
