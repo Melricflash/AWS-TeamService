@@ -27,7 +27,7 @@ jobs:
         env:
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
         run: |
-          pytest --disable-warnings
+          pytest -v
 
   Build:
     name: Build
