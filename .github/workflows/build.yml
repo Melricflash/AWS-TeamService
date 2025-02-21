@@ -26,6 +26,9 @@ jobs:
       - name: Run application tests
         env:
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+          AWS_ACCESS_KEY: ${{secrets.AWS_ACCESS_KEY_ID}}
+          AWS_SECRET_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+          p3Queue_URL: ${{ secrets.P1QUEUE_URL }}
         run: |
           pytest -v
 
